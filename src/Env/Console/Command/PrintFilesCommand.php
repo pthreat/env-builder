@@ -2,6 +2,7 @@
 
 namespace LDL\Env\Console\Command;
 
+use LDL\Env\Finder\EnvFileFinderInterface;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use LDL\Env\Finder\EnvFileFinder;
 use LDL\Env\Finder\Exception\NoFilesFoundException;
@@ -15,11 +16,29 @@ class PrintFilesCommand extends SymfonyCommand
 {
     public const COMMAND_NAME = 'env:print';
 
-    protected const DEFAULT_DIRECTORIES = [];
-    protected const DEFAULT_SCAN_FILES = ['.env'];
+    /**
+     * @var EnvFileFinderInterface
+     */
+    private $finder;
+
+    public function __construct(?string $name = null, EnvFileFinderInterface $finder=null)
+    {
+        parent::__construct($name);
+
+        if(null === $finder){
+            $finder = new EnvFileFinder();
+        }
+
+        $this->finder = $finder;
+    }
 
     public function configure() : void
     {
+        $defaults = EnvFileFinderOptions::fromArray([]);
+
+        $defaultDirectories = implode(', ', $defaults->getDirectories());
+        $defaultFiles = implode(', ', $defaults->getFiles());
+
         $this->setName(self::COMMAND_NAME)
             ->setDescription('Prints .env files')
             ->addOption(
@@ -28,9 +47,9 @@ class PrintFilesCommand extends SymfonyCommand
                 InputOption::VALUE_REQUIRED,
                 sprintf(
                     'Comma separated list of directories to scan, default: %s',
-                    implode(', ', self::DEFAULT_DIRECTORIES)
+                    $defaultDirectories
                 ),
-                self::DEFAULT_DIRECTORIES
+                $defaultDirectories
             )
             ->addOption(
                 'scan-files',
@@ -38,42 +57,41 @@ class PrintFilesCommand extends SymfonyCommand
                 InputOption::VALUE_REQUIRED,
                 sprintf(
                     'Comma separated list of files to scan, default: %s',
-                    implode(', ', self::DEFAULT_SCAN_FILES)
+                    $defaultFiles
                 ),
-                self::DEFAULT_SCAN_FILES
+                $defaultFiles
             );
     }
 
     public function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $this->printServiceFiles($input, $output);
+            $this->printFiles($input, $output);
+            return 0;
         }catch(\Exception $e){
             $output->writeln("<error>{$e->getMessage()}</error>");
+            return 1;
         }
     }
 
-    private function printServiceFiles(
+    private function printFiles(
         InputInterface $input,
         OutputInterface $output
     ) : void
     {
-        $scanDirectories = $input->getOption('scan-directories');
-        $scanFiles = $input->getOption('scan-files');
-
-        $finder = EnvFileFinderOptions::fromArray([
-            'directories' => $scanDirectories,
-            'files' => $scanFiles
-        ]);
-
-        $finderService = new EnvFileFinder($finder);
-
         $total = 0;
 
         $output->writeln("<info>[ Env files list ]</info>\n");
 
         try{
-            $files = $finderService->find();
+
+            $files = $this->finder->find(
+                EnvFileFinderOptions::fromArray([
+                    'directories' => explode(',', $input->getOption('scan-directories')),
+                    'files' => explode(',', $input->getOption('scan-files'))
+                ])
+            );
+
         }catch(NoFilesFoundException $e){
             $output->writeln("\n<error>{$e->getMessage()}</error>\n");
 

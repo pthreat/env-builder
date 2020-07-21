@@ -14,26 +14,36 @@ class EnvCompiler implements EnvCompilerInterface
 
     private $contents = [];
 
-    public function __construct(EnvCompilerOptions $options=null)
+    public function compile(
+        GenericFileCollection $files,
+        EnvCompilerOptions $options = null
+    ) : string
     {
-        $this->options = $options ?? EnvCompilerOptions::fromArray([]);
-    }
+        $this->options = $options ?? Options\EnvCompilerOptions::fromArray([]);
 
-    public function compile(GenericFileCollection $files) : string
-    {
         foreach($files as $file){
             $this->contents[$file->getRealPath()] = $this->parse($file);
         }
 
-        if($this->options->commentsEnabled()){
-            foreach($this->contents as $file => &$vars){
-                $comment = "# Taken from: $file";
-                array_unshift($vars, $comment);
+        $contents = '';
+
+        foreach($this->contents as $file => &$vars) {
+            if ($this->options->commentsEnabled()) {
+                $comment = "# Taken from: $file\n";
+                $contents .= $comment;
             }
+
+            foreach($vars as $key=>$value) {
+                $contents .= strpos($key, 'comment') !== false ? $value : "$key=$value";
+                $contents .= "\n";
+            }
+
+            $contents .= "\n";
         }
 
-        return implode("\n", $this->contents);
+        return $contents;
     }
+
 
     private function parse(\SplFileInfo $file) : array
     {
@@ -45,6 +55,22 @@ class EnvCompiler implements EnvCompilerInterface
 
         while($line = fgets($fp)){
 
+            $line = trim($line);
+
+            $firstCharacter = $line[0];
+
+            if('#' === $firstCharacter && false === $this->options->removeComments()){
+                $key = "comment_$lineNo";
+                $contents[$key] = $line;
+                $lineNo++;
+                continue;
+            }
+
+            if('#' === $firstCharacter && true === $this->options->removeComments()){
+                $lineNo++;
+                continue;
+            }
+
             $kv = $this->getKeyValue($file, $line, $lineNo);
 
             if(count($kv) === 0){
@@ -53,6 +79,17 @@ class EnvCompiler implements EnvCompilerInterface
             }
 
             $key = $kv['key'];
+
+            if(true === $this->options->isPrefixVariableWithFileName()){
+                $dir = basename(dirname($file->getRealPath()));
+
+                $key = sprintf(
+                    '%s_%s',
+                    true === $this->options->convertToUpperCase() ? strtoupper($dir) : $dir,
+                    $kv['key']
+                );
+            }
+
             $value = $kv['value'];
 
             if(false === $this->options->allowVariableOverwrite()) {
@@ -96,36 +133,26 @@ class EnvCompiler implements EnvCompilerInterface
 
         return [
             'key' => trim(substr($line, 0, $equalsPosition)),
-            'value' => substr($line, $equalsPosition)
+            'value' => substr($line, $equalsPosition+1)
         ];
     }
 
     private function checkDuplicateKey(string $key, int $lineNo, \SplFileInfo $currentFile) : void
     {
-        foreach($this->contents as $content){
-            if(!array_key_exists($key, $content['vars'])){
+        foreach($this->contents as $file => $content){
+            if(!array_key_exists($key, $content)){
                 continue;
             }
 
-            /**
-             * @var \SplFileInfo $previousFile
-             */
-            $previousFile = $content['file'];
             $msg = sprintf(
                 'Duplicate key "%s" found in file: "%s", at line: %s", previously defined in file "%s"',
                 $key,
                 $currentFile->getRealPath(),
-                $previousFile->getRealPath(),
-                $lineNo
+                $lineNo,
+                $file
             );
 
             throw new Exception\DuplicateKeyException($msg);
         }
     }
-
-    public function __toString()
-    {
-
-    }
-
 }

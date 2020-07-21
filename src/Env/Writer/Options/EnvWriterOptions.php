@@ -7,24 +7,23 @@ class EnvWriterOptions
     /**
      * @var string
      */
-    private $filename;
-
-    /**
-     * @var string
-     */
-    private $directory;
+    private $filename = 'env-compiled';
 
     /**
      * @var bool
      */
     private $force = false;
 
-    public static function fromArray(array $options)
+    public function __construct()
+    {
+    }
+
+    public static function fromArray(array $options) : self
     {
         $instance = new static();
         $defaults = get_object_vars($instance);
 
-        foreach($options as $opt){
+        foreach($options as $opt=>$value){
             if(array_key_exists($opt, $defaults)) {
                 continue;
             }
@@ -39,12 +38,7 @@ class EnvWriterOptions
 
         $merge = array_merge($defaults, $options);
 
-        if(null === $merge['directory']){
-            $merge['directory'] = getcwd();
-        }
-
         return $instance->setFilename($merge['filename'])
-            ->setDirectory($merge['directory'])
             ->setForce($merge['force']);
     }
 
@@ -65,25 +59,6 @@ class EnvWriterOptions
         $this->filename = $filename;
         return $this;
     }
-
-    /**
-     * @return string
-     */
-    public function getDirectory(): string
-    {
-        return $this->directory;
-    }
-
-    /**
-     * @param string $directory
-     * @return EnvWriterOptions
-     */
-    private function setDirectory(string $directory): EnvWriterOptions
-    {
-        $this->directory = $directory;
-        return $this;
-    }
-
     /**
      * @return bool
      */
@@ -102,13 +77,4 @@ class EnvWriterOptions
         return $this;
     }
 
-    public function getPath(): string
-    {
-        return sprintf(
-            '%s%s%s',
-            $this->getDirectory(),
-            DIRECTORY_SEPARATOR,
-            $this->getFilename()
-        );
-    }
 }

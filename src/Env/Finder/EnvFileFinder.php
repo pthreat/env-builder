@@ -8,27 +8,21 @@ use LDL\FS\Type\Types\Generic\Collection\GenericFileCollection;
 class EnvFileFinder implements EnvFileFinderInterface
 {
     /**
-     * @var Options\EnvFileFinderOptions
-     */
-    private $options;
-
-    public function __construct(Options\EnvFileFinderOptions $options)
-    {
-        $this->options = $options;
-    }
-
-    /**
      * {@inheritdoc}
      */
-    public function find() : GenericFileCollection
+    public function find(Options\EnvFileFinderOptions $options=null) : GenericFileCollection
     {
-        $files = LocalFileFinder::find($this->options->getFiles(), $this->options->getDirectories());
+        $options =  $options ?? Options\EnvFileFinderOptions::fromArray([]);
+
+        $files = LocalFileFinder::find($options->getDirectories(), $options->getFiles(), true);
 
         if(!count($files)){
             $msg = sprintf(
-                'No ENV files were found matching: %s',
-                implode(', ', $this->options->getFiles())
+                'No files were found matching: "%s" in directories: "%s"',
+                implode(', ', $options->getFiles()),
+                implode(', ', $options->getDirectories())
             );
+
             throw new Exception\NoFilesFoundException($msg);
         }
 

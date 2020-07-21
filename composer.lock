@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a2f46dbef402623ef6405e2e96fd2e44",
+    "content-hash": "8eb1eafd4ff64505d6bd72413645c241",
     "packages": [
         {
             "name": "ldl-framework/console-helper",
@@ -58,12 +58,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pthreat/ldl-file-common.git",
-                "reference": "a810e20154566c759d11d4f5265ea76ad06d4868"
+                "reference": "1c2c963be0475572579733df5286da8dfa27385f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pthreat/ldl-file-common/zipball/a810e20154566c759d11d4f5265ea76ad06d4868",
-                "reference": "a810e20154566c759d11d4f5265ea76ad06d4868",
+                "url": "https://api.github.com/repos/pthreat/ldl-file-common/zipball/1c2c963be0475572579733df5286da8dfa27385f",
+                "reference": "1c2c963be0475572579733df5286da8dfa27385f",
                 "shasum": ""
             },
             "require": {
@@ -96,7 +96,7 @@
                 "handling",
                 "type"
             ],
-            "time": "2020-07-20T16:04:34+00:00"
+            "time": "2020-07-20T19:50:20+00:00"
         },
         {
             "name": "ldl-framework/file-finder",

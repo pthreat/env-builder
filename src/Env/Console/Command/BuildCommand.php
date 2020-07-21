@@ -2,16 +2,14 @@
 
 namespace LDL\Env\Console\Command;
 
+use LDL\Env\Builder\EnvBuilderInterface;
 use LDL\Env\Writer\Exception\FileAlreadyExistsException;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use LDL\Console\Helper\ProgressBarFactory;
 use LDL\Env\Builder\EnvBuilder;
-use LDL\Env\Compiler\EnvCompiler;
 use LDL\Env\Compiler\Options\EnvCompilerOptions;
-use LDL\Env\Finder\EnvFileFinder;
 use LDL\Env\Finder\Exception\NoFilesFoundException;
 use LDL\Env\Finder\Options\EnvFileFinderOptions;
-use LDL\Env\Writer\EnvFileWriter;
 use LDL\Env\Writer\Options\EnvWriterOptions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,18 +20,25 @@ class BuildCommand extends SymfonyCommand
 {
     public const COMMAND_NAME = 'env:build';
 
-    protected const DEFAULT_DIRECTORIES = [];
-    protected const DEFAULT_SCAN_FILES = ['.env'];
-    protected const DEFAULT_FORCE_FILE_OVERWRITE = false;
-    protected const DEFAULT_ALLOW_VARIABLE_OVERWRITE = false;
-    protected const DEFAULT_IGNORE_SYNTAX_ERROR = false;
-    protected const DEFAULT_PREFIX_VARIABLE = false;
-    protected const DEFAULT_PREFIX_DEPTH = 1;
-    protected const DEFAULT_CONVERT_TO_UPPERCASE = true;
-    protected const DEFAULT_COMMENTS_ENABLED = true;
+    /**
+     * @var EnvBuilderInterface
+     */
+    private $builder;
+
+    public function __construct(
+        ?string $name = null,
+        EnvBuilderInterface $builder=null
+    )
+    {
+        parent::__construct($name);
+        $this->builder = $builder ?? new EnvBuilder();
+    }
 
     public function configure() : void
     {
+        $finderDefaults = EnvFileFinderOptions::fromArray([]);
+        $compilerDefaults = EnvCompilerOptions::fromArray([]);
+
         $this->setName(self::COMMAND_NAME)
             ->setDescription('Build compiled .env file')
             ->addArgument(
@@ -41,17 +46,11 @@ class BuildCommand extends SymfonyCommand
                 InputArgument::REQUIRED,
                 'Name of the output file'
             )
-            ->addArgument(
-                'output-directory',
-                InputArgument::OPTIONAL,
-                'Directory of the output file'
-            )
             ->addOption(
-                'force',
+                'force-overwrite',
                 'f',
-                InputOption::VALUE_OPTIONAL,
-                'Overwrite output file',
-                self::DEFAULT_FORCE_FILE_OVERWRITE
+                InputOption::VALUE_NONE,
+                'Overwrite output file'
             )
             ->addOption(
                 'scan-directories',
@@ -59,61 +58,59 @@ class BuildCommand extends SymfonyCommand
                 InputOption::VALUE_OPTIONAL,
                 sprintf(
                     'Comma separated list of directories to scan, default: %s',
-                    implode(', ', self::DEFAULT_DIRECTORIES)
+                    implode(', ', $finderDefaults->getDirectories())
                 ),
-                self::DEFAULT_DIRECTORIES
+                implode(',', $finderDefaults->getDirectories())
             )
             ->addOption(
                 'scan-files',
                 'l',
                 InputOption::VALUE_OPTIONAL,
-                sprintf(
-                    'Comma separated list of files to scan, default: %s',
-                    implode(', ', self::DEFAULT_SCAN_FILES)
-                ),
-                self::DEFAULT_SCAN_FILES
+                'Comma separated list of files to scan',
+                implode(', ', $finderDefaults->getFiles())
             )
             ->addOption(
                 'variable-overwrite',
                 'o',
-                InputOption::VALUE_OPTIONAL,
-                'Allow variable overwrite',
-                self::DEFAULT_ALLOW_VARIABLE_OVERWRITE
+                InputOption::VALUE_NONE,
+                'Allow variable overwrite'
             )
             ->addOption(
                 'ignore-syntax-error',
+                'i',
+                InputOption::VALUE_NONE,
+                'Ignore syntax error'
+            )
+            ->addOption(
+                'prefix-variable-with-file',
+                'p',
+                InputOption::VALUE_NONE,
+                'Prefix variable with directory name, example: MyProject/.env var TEST becomes MYPROJECT_TEST'
+            )
+            ->addOption(
+                'prefix-variable-depth',
                 'e',
                 InputOption::VALUE_OPTIONAL,
-                'Ignore syntax error',
-                self::DEFAULT_IGNORE_SYNTAX_ERROR
-            )
-            ->addOption(
-                'prefix-variable',
-                'v',
-                InputOption::VALUE_OPTIONAL,
-                'Prefix variable',
-                self::DEFAULT_PREFIX_VARIABLE
-            )
-            ->addOption(
-                'prefix-depth',
-                'p',
-                InputOption::VALUE_OPTIONAL,
-                'Prefix depth',
-                self::DEFAULT_PREFIX_DEPTH
+                'Set directory depth for prefix-variable-with-file',
+                $compilerDefaults->getPrefixDepth()
             )
             ->addOption(
                 'convert-to-uppercase',
                 'u',
-                InputOption::VALUE_OPTIONAL,
-                'Convert variables to uppercase',
-                self::DEFAULT_CONVERT_TO_UPPERCASE
+                InputOption::VALUE_NONE,
+                'Convert variables to uppercase'
             )
             ->addOption(
                 'comments-enabled',
                 'c',
-                InputOption::VALUE_OPTIONAL,
-                'Comments enabled on the result file',
-                self::DEFAULT_COMMENTS_ENABLED
+                InputOption::VALUE_NONE,
+                'Adds a comment indicating from which file the env variables defined came from'
+            )
+            ->addOption(
+                'remove-comments',
+                'r',
+                InputOption::VALUE_NONE,
+                'Remove the comments'
             );
     }
 
@@ -121,8 +118,10 @@ class BuildCommand extends SymfonyCommand
     {
         try {
             $this->build($input, $output);
+            return 0;
         }catch(\Exception $e){
             $output->writeln("<error>{$e->getMessage()}</error>");
+            return 1;
         }
     }
 
@@ -133,50 +132,34 @@ class BuildCommand extends SymfonyCommand
     {
         $start = hrtime(true);
 
-        $outputFile = $input->getArgument('output-file');
-        $outputDirectory = $input->getArgument('output-directory');
-        $forceFileOverwrite = $input->getOption('output-overwrite');
-        $scanDirectories = $input->getOption('scan-directories');
-        $scanFiles = $input->getOption('scan-files');
-        $variableOverwrite = $input->getOption('variable-overwrite');
-        $ignoreSyntaxErrors = $input->getOption('ignore-syntax-error');
-        $prefixVariable = $input->getOption('prefix-variable');
-        $prefixDepth = $input->getOption('prefix-depth');
-        $convertToUpper = $input->getOption('convert-to-uppercase');
-        $convertsEnabled = $input->getOption('comments-enabled');
-
         try{
+
+            $writerOptions = EnvWriterOptions::fromArray([
+                'filename' => $input->getArgument('output-file'),
+                'force' => (bool) $input->getOption('force-overwrite')
+            ]);
+
             $finderOptions = EnvFileFinderOptions::fromArray([
-                'directories' => $scanDirectories,
-                'files' => $scanFiles
+                'directories' => explode(',', $input->getOption('scan-directories')),
+                'files' => explode(',', $input->getOption('scan-files'))
             ]);
 
             $compilerOptions = EnvCompilerOptions::fromArray([
-                'allowVariableOverwrite' => $variableOverwrite,
-                'ignoreSyntaxErrors' => $ignoreSyntaxErrors,
-                'prefixVariableWithFileName' => $prefixVariable,
-                'prefixDepth' => $prefixDepth,
-                'convertToUpperCase' => $convertToUpper,
-                'commentsEnabled' => $convertsEnabled
+                'allowVariableOverwrite' => $input->getOption('variable-overwrite'),
+                'ignoreSyntaxErrors' => $input->getOption('ignore-syntax-error'),
+                'prefixVariableWithFileName' => $input->getOption('prefix-variable-with-file'),
+                'prefixDepth' => $input->getOption('prefix-variable-depth'),
+                'convertToUpperCase' => $input->getOption('convert-to-uppercase'),
+                'commentsEnabled' => $input->getOption('comments-enabled'),
+                'removeComments' => $input->getOption('remove-comments')
             ]);
 
-            $writerOptions = EnvWriterOptions::fromArray([
-                'filename' => $outputFile,
-                'directory' => $outputDirectory,
-                'force' => $forceFileOverwrite
-            ]);
         }catch(\Exception $e){
-            $output->writeln("\n<error>Could not start building!</error>\n");
+            $output->writeln("\n<error>Build failed!</error>\n");
             $output->writeln("\n<error>{$e->getMessage()}</error>\n");
 
             return;
         }
-
-        $finderService = new EnvFileFinder($finderOptions);
-        $compilerService = new EnvCompiler($compilerOptions);
-        $writerService = new EnvFileWriter($writerOptions);
-
-        $builder = new EnvBuilder($finderService, $compilerService, $writerService);
 
         try {
 
@@ -184,10 +167,14 @@ class BuildCommand extends SymfonyCommand
 
             $output->writeln("\n<info>$title</info>\n");
 
-            $progressBar = ProgressBarFactory::build($output);
-            $progressBar->start();
+            //$progressBar = ProgressBarFactory::build($output);
+            //$progressBar->start();
 
-            $builder->build();
+            $this->builder->build(
+                $finderOptions,
+                $compilerOptions,
+                $writerOptions
+            );
 
             $output->writeln("");
 
@@ -203,7 +190,7 @@ class BuildCommand extends SymfonyCommand
 
         }
 
-        $progressBar->finish();
+        //$progressBar->finish();
 
         $end = hrtime(true);
         $total = round((($end - $start) / 1e+6) / 1000,2);

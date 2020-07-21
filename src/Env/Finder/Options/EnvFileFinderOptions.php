@@ -16,12 +16,16 @@ class EnvFileFinderOptions
         '.env'
     ];
 
-    public static function fromArray(array $options)
+    private function __construct()
+    {
+    }
+
+    public static function fromArray(array $options) : self
     {
         $instance = new static();
         $defaults = get_object_vars($instance);
 
-        foreach($options as $opt){
+        foreach($options as $opt=>$value){
             if(array_key_exists($opt, $defaults)) {
                 continue;
             }

@@ -34,12 +34,21 @@ class EnvCompilerOptions
      */
     private $commentsEnabled = true;
 
-    public static function fromArray(array $options)
+    /**
+     * @var bool
+     */
+    private $removeComments = false;
+
+    private function __construct()
+    {
+    }
+
+    public static function fromArray(array $options) : self
     {
         $instance = new static();
         $defaults = get_object_vars($instance);
 
-        foreach($options as $opt){
+        foreach($options as $opt=>$value){
             if(array_key_exists($opt, $defaults)) {
                 continue;
             }
@@ -59,7 +68,8 @@ class EnvCompilerOptions
             ->setPrefixVariableWithFileName($merge['prefixVariableWithFileName'])
             ->setPrefixDepth($merge['prefixDepth'])
             ->setConvertToUpperCase($merge['convertToUpperCase'])
-            ->setCommentsEnabled($merge['commentsEnabled']);
+            ->setCommentsEnabled($merge['commentsEnabled'])
+            ->setRemoveComments($merge['removeComments']);
     }
 
     /**
@@ -184,6 +194,24 @@ class EnvCompilerOptions
     {
         $this->commentsEnabled = $enabled;
 
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function removeComments(): bool
+    {
+        return $this->removeComments;
+    }
+
+    /**
+     * @param bool $removeComments
+     * @return EnvCompilerOptions
+     */
+    private function setRemoveComments(bool $removeComments): EnvCompilerOptions
+    {
+        $this->removeComments = $removeComments;
         return $this;
     }
 }

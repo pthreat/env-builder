@@ -89,7 +89,7 @@ class EnvCompilerOptions
      */
     public function getOnBeforeCompile() : ?callable
     {
-        return $this->onCompile;
+        return $this->onBeforeCompile;
     }
 
     /**
@@ -105,7 +105,7 @@ class EnvCompilerOptions
      */
     public function getOnAfterCompile() : ?callable
     {
-        return $this->onCompile;
+        return $this->onAfterCompile;
     }
 
     /**

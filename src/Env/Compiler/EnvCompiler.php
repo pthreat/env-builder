@@ -2,6 +2,7 @@
 
 namespace LDL\Env\Compiler;
 
+use LDL\Console\Helper\ProgressBarFactory;
 use LDL\Env\Compiler\Line\Factory\EnvLineCompilerCompilerFactory;
 use LDL\Env\Compiler\Options\EnvCompilerOptions;
 use LDL\Env\Reader\Line\EnvLine;
@@ -42,12 +43,25 @@ class EnvCompiler implements EnvCompilerInterface
 
             $lines = $reader->read($options);
 
+            if($this->options->getOnBeforeCompile()){
+                $this->options->getOnBeforeCompile()($file, $lines);
+            }
+
             /**
              * @var EnvLine $parser
              */
             foreach($lines as $line){
                 $compiler = EnvLineCompilerCompilerFactory::build($line);
+                $compiled = $compiler->compile($this->options, $file, $this->contents);
                 $this->contents[$filePath][] = $compiler->compile($this->options, $file, $this->contents);
+
+                if($this->options->getOnCompile()){
+                    $this->options->getOnCompile()($compiled, $this->contents);
+                }
+            }
+
+            if($this->options->getOnAfterCompile()){
+                $this->options->getOnAfterCompile()($file, $lines);
             }
 
             $return = [];

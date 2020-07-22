@@ -11,6 +11,7 @@ use LDL\Env\Compiler\Options\EnvCompilerOptions;
 use LDL\Env\Finder\Exception\NoFilesFoundException;
 use LDL\Env\Finder\Options\EnvFileFinderOptions;
 use LDL\Env\Writer\Options\EnvWriterOptions;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -138,7 +139,8 @@ class BuildCommand extends SymfonyCommand
                 'files' => explode(',', $input->getOption('scan-files'))
             ]);
 
-            //$compilerProgress = ProgressBarFactory::build($output);
+            $compilerProgress = new ProgressBar($output);
+            $compilerProgress->setOverwrite(true);
 
             $compilerOptions = EnvCompilerOptions::fromArray([
                 'allowVariableOverwrite' => $input->getOption('variable-overwrite'),
@@ -146,21 +148,22 @@ class BuildCommand extends SymfonyCommand
                 'prefixDepth' => $input->getOption('prefix-variable-depth'),
                 'convertToUpperCase' => $input->getOption('convert-to-uppercase'),
                 'commentsEnabled' => $input->getOption('comments-enabled'),
-                'removeComments' => $input->getOption('remove-comments')
+                'removeComments' => $input->getOption('remove-comments'),
+                'onBeforeCompile' => function($file, $lines) use ($compilerProgress, $output){
+                    $output->writeln("\n\n<info>Compiling {$file->getRealPath()}</info>\n");
+                    $compilerProgress->setMaxSteps(count($lines));
+                },
+                'onCompile' => function($file, $var) use ($compilerProgress){
+                    $compilerProgress->advance();
+                },
+                'onAfterCompile' => function($file, $vars) use ($compilerProgress){
+                    $compilerProgress->finish();
+                }
             ]);
-
-        }catch(\Exception $e){
-            $output->writeln("\n<error>Build failed!</error>\n");
-            $output->writeln("\n<error>{$e->getMessage()}</error>\n");
-
-            return;
-        }
-
-        try {
 
             $title = '[ Building compiled env file ]';
 
-            $output->writeln("\n<info>$title</info>\n");
+            $output->writeln("\n<info>$title</info>");
 
             $this->builder->build(
                 $finderOptions,
@@ -170,15 +173,10 @@ class BuildCommand extends SymfonyCommand
 
             $output->writeln("");
 
-        }catch(NoFilesFoundException $e){
+        }catch(\Exception $e) {
 
-            $output->writeln("\n<error>Build failed!</error>\n");
-            $output->writeln("\n<error>{$e->getMessage()}</error>\n");
-
-        }catch(FileAlreadyExistsException $e){
-
-            $output->writeln("\n<error>Build failed!</error>\n");
-            $output->writeln("\n<error>{$e->getMessage()}</error>\n");
+            $output->writeln("\n\n<error>Build failed!</error>\n");
+            $output->writeln("\n{$e->getMessage()}");
 
         }
 

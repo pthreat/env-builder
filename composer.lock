@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8eb1eafd4ff64505d6bd72413645c241",
+    "content-hash": "89126678ee7236b6edae3cec18068d2a",
     "packages": [
         {
             "name": "ldl-framework/console-helper",

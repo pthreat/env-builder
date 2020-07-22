@@ -2,10 +2,10 @@
 
 namespace LDL\Env\Console\Command;
 
+use LDL\Console\Helper\ProgressBarFactory;
 use LDL\Env\Builder\EnvBuilderInterface;
 use LDL\Env\Writer\Exception\FileAlreadyExistsException;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
-use LDL\Console\Helper\ProgressBarFactory;
 use LDL\Env\Builder\EnvBuilder;
 use LDL\Env\Compiler\Options\EnvCompilerOptions;
 use LDL\Env\Finder\Exception\NoFilesFoundException;
@@ -82,16 +82,10 @@ class BuildCommand extends SymfonyCommand
                 'Ignore syntax error'
             )
             ->addOption(
-                'prefix-variable-with-file',
-                'p',
-                InputOption::VALUE_NONE,
-                'Prefix variable with directory name, example: MyProject/.env var TEST becomes MYPROJECT_TEST'
-            )
-            ->addOption(
                 'prefix-variable-depth',
-                'e',
+                'p',
                 InputOption::VALUE_OPTIONAL,
-                'Set directory depth for prefix-variable-with-file',
+                'Set directory depth to prefix variable name with directory name',
                 $compilerDefaults->getPrefixDepth()
             )
             ->addOption(
@@ -144,10 +138,11 @@ class BuildCommand extends SymfonyCommand
                 'files' => explode(',', $input->getOption('scan-files'))
             ]);
 
+            //$compilerProgress = ProgressBarFactory::build($output);
+
             $compilerOptions = EnvCompilerOptions::fromArray([
                 'allowVariableOverwrite' => $input->getOption('variable-overwrite'),
                 'ignoreSyntaxErrors' => $input->getOption('ignore-syntax-error'),
-                'prefixVariableWithFileName' => $input->getOption('prefix-variable-with-file'),
                 'prefixDepth' => $input->getOption('prefix-variable-depth'),
                 'convertToUpperCase' => $input->getOption('convert-to-uppercase'),
                 'commentsEnabled' => $input->getOption('comments-enabled'),
@@ -166,9 +161,6 @@ class BuildCommand extends SymfonyCommand
             $title = '[ Building compiled env file ]';
 
             $output->writeln("\n<info>$title</info>\n");
-
-            //$progressBar = ProgressBarFactory::build($output);
-            //$progressBar->start();
 
             $this->builder->build(
                 $finderOptions,
@@ -189,8 +181,6 @@ class BuildCommand extends SymfonyCommand
             $output->writeln("\n<error>{$e->getMessage()}</error>\n");
 
         }
-
-        //$progressBar->finish();
 
         $end = hrtime(true);
         $total = round((($end - $start) / 1e+6) / 1000,2);

@@ -51,7 +51,10 @@ class EnvBuilder implements EnvBuilderInterface
     {
         $files = $this->envFileFinder->find($finderOptions);
 
-        $compiled = $this->envCompiler->compile($files, $compilerOptions);
+        $compiled = $this->envCompiler->compile(
+            $files,
+            $compilerOptions
+        );
 
         $this->envFileWriter->write($compiled, $writerOptions);
     }

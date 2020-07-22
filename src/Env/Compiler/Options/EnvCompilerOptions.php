@@ -15,14 +15,9 @@ class EnvCompilerOptions
     private $ignoreSyntaxErrors = false;
 
     /**
-     * @var bool
-     */
-    private $prefixVariableWithFileName = false;
-
-    /**
      * @var int
      */
-    private $prefixDepth=1;
+    private $prefixDepth=0;
 
     /**
      * @var bool
@@ -38,6 +33,21 @@ class EnvCompilerOptions
      * @var bool
      */
     private $removeComments = false;
+
+    /**
+     * @var callable
+     */
+    private $onBeforeCompile;
+
+    /**
+     * @var callable
+     */
+    private $onCompile;
+
+    /**
+     * @var callable
+     */
+    private $onAfterCompile;
 
     private function __construct()
     {
@@ -65,19 +75,37 @@ class EnvCompilerOptions
 
         return $instance->setAllowVariableOverwrite($merge['allowVariableOverwrite'])
             ->SetIgnoreSyntaxErrors($merge['ignoreSyntaxErrors'])
-            ->setPrefixVariableWithFileName($merge['prefixVariableWithFileName'])
             ->setPrefixDepth($merge['prefixDepth'])
             ->setConvertToUpperCase($merge['convertToUpperCase'])
             ->setCommentsEnabled($merge['commentsEnabled'])
-            ->setRemoveComments($merge['removeComments']);
+            ->setRemoveComments($merge['removeComments'])
+            ->setOnBeforeCompile($merge['onBeforeCompile'])
+            ->setOnCompile($merge['onCompile'])
+            ->setOnAfterCompile($merge['onAfterCompile']);
     }
 
     /**
-     * @return bool
+     * @return callable|null
      */
-    public function isAllowVariableOverwrite(): bool
+    public function getOnBeforeCompile() : ?callable
     {
-        return $this->allowVariableOverwrite;
+        return $this->onCompile;
+    }
+
+    /**
+     * @return callable|null
+     */
+    public function getOnCompile() : ?callable
+    {
+        return $this->onCompile;
+    }
+
+    /**
+     * @return callable|null
+     */
+    public function getOnAfterCompile() : ?callable
+    {
+        return $this->onCompile;
     }
 
     /**
@@ -88,14 +116,6 @@ class EnvCompilerOptions
     {
         $this->allowVariableOverwrite = $allowVariableOverwrite;
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isIgnoreSyntaxErrors(): bool
-    {
-        return $this->ignoreSyntaxErrors;
     }
 
     /**
@@ -121,15 +141,6 @@ class EnvCompilerOptions
     {
         return $this->ignoreSyntaxErrors;
     }
-
-    /**
-     * @return bool
-     */
-    public function isPrefixVariableWithFileName(): bool
-    {
-        return $this->prefixVariableWithFileName;
-    }
-
     /**
      * @return int
      */
@@ -144,26 +155,6 @@ class EnvCompilerOptions
     public function commentsEnabled(): bool
     {
         return $this->commentsEnabled;
-    }
-
-    /**
-     * @param bool $ignoreSyntaxErrors
-     * @return EnvCompilerOptions
-     */
-    private function setIgnoreSyntaxErrors(bool $ignoreSyntaxErrors): EnvCompilerOptions
-    {
-        $this->ignoreSyntaxErrors = $ignoreSyntaxErrors;
-        return $this;
-    }
-
-    /**
-     * @param bool $prefixVariableWithFileName
-     * @return EnvCompilerOptions
-     */
-    private function setPrefixVariableWithFileName(bool $prefixVariableWithFileName): EnvCompilerOptions
-    {
-        $this->prefixVariableWithFileName = $prefixVariableWithFileName;
-        return $this;
     }
 
     /**
@@ -214,4 +205,45 @@ class EnvCompilerOptions
         $this->removeComments = $removeComments;
         return $this;
     }
+
+    /**
+     * @param bool $ignoreSyntaxErrors
+     * @return EnvCompilerOptions
+     */
+    private function setIgnoreSyntaxErrors(bool $ignoreSyntaxErrors): EnvCompilerOptions
+    {
+        $this->ignoreSyntaxErrors = $ignoreSyntaxErrors;
+        return $this;
+    }
+
+    /**
+     * @param callable $fn
+     * @return EnvCompilerOptions
+     */
+    private function setOnAfterCompile(callable $fn=null) : EnvCompilerOptions
+    {
+        $this->onAfterCompile = $fn;
+        return $this;
+    }
+
+    /**
+     * @param callable $fn
+     * @return EnvCompilerOptions
+     */
+    private function setOnCompile(callable $fn=null) : EnvCompilerOptions
+    {
+        $this->onCompile = $fn;
+        return $this;
+    }
+
+    /**
+     * @param callable|null $fn
+     * @return EnvCompilerOptions
+     */
+    private function setOnBeforeCompile(callable $fn=null) : EnvCompilerOptions
+    {
+        $this->onBeforeCompile = $fn;
+        return $this;
+    }
+
 }

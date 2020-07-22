@@ -4,54 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "89126678ee7236b6edae3cec18068d2a",
+    "content-hash": "51acbb2be39b6921b3b70eec1a460695",
     "packages": [
-        {
-            "name": "ldl-framework/console-helper",
-            "version": "v0.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pthreat/ldl-console-helper.git",
-                "reference": "2b07cc98d67994e66c0f092a4de9e3f1e2fbb517"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pthreat/ldl-console-helper/zipball/2b07cc98d67994e66c0f092a4de9e3f1e2fbb517",
-                "reference": "2b07cc98d67994e66c0f092a4de9e3f1e2fbb517",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.1",
-                "symfony/console": "~2.3||~3.0||~4.0||~5.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "LDL": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Federico Stange",
-                    "email": "jpfstange@gmail.com"
-                },
-                {
-                    "name": "Gonzalo Coda",
-                    "email": "gonzalocoda@gmail.com"
-                }
-            ],
-            "description": "Console helper is a package to styling a little bit different the symfony console",
-            "homepage": "https://github.com/pthreat/ldl-console-helper",
-            "keywords": [
-                "console",
-                "helper"
-            ],
-            "time": "2020-07-20T18:52:33+00:00"
-        },
         {
             "name": "ldl-framework/file-common",
             "version": "v0.0.1",

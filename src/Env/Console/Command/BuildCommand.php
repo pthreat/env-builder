@@ -2,13 +2,12 @@
 
 namespace LDL\Env\Console\Command;
 
-use LDL\Console\Helper\ProgressBarFactory;
-use LDL\Env\Builder\EnvBuilderInterface;
-use LDL\Env\Writer\Exception\FileAlreadyExistsException;
+use LDL\Env\Compiler\EnvCompiler;
+use LDL\Env\Finder\EnvFileFinder;
+use LDL\Env\Writer\EnvFileWriter;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use LDL\Env\Builder\EnvBuilder;
 use LDL\Env\Compiler\Options\EnvCompilerOptions;
-use LDL\Env\Finder\Exception\NoFilesFoundException;
 use LDL\Env\Finder\Options\EnvFileFinderOptions;
 use LDL\Env\Writer\Options\EnvWriterOptions;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -20,20 +19,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 class BuildCommand extends SymfonyCommand
 {
     public const COMMAND_NAME = 'env:build';
-
-    /**
-     * @var EnvBuilderInterface
-     */
-    private $builder;
-
-    public function __construct(
-        ?string $name = null,
-        EnvBuilderInterface $builder=null
-    )
-    {
-        parent::__construct($name);
-        $this->builder = $builder ?? new EnvBuilder();
-    }
 
     public function configure() : void
     {
@@ -165,11 +150,13 @@ class BuildCommand extends SymfonyCommand
 
             $output->writeln("\n<info>$title</info>");
 
-            $this->builder->build(
-                $finderOptions,
-                $compilerOptions,
-                $writerOptions
+            $builder = new EnvBuilder(
+                new EnvFileFinder($finderOptions),
+                new EnvCompiler($compilerOptions),
+                new EnvFileWriter($writerOptions)
             );
+
+            $builder->build();
 
             $output->writeln("");
 

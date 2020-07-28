@@ -43,19 +43,38 @@ class EnvBuilder implements EnvBuilderInterface
     /**
      * {@inheritdoc}
      */
-    public function build(
-        EnvFileFinderOptions $finderOptions = null,
-        EnvCompilerOptions $compilerOptions = null,
-        EnvWriterOptions $writerOptions = null
-    ): void
+    public function build(): void
     {
-        $files = $this->envFileFinder->find($finderOptions);
+        $files = $this->envFileFinder->find();
 
         $compiled = $this->envCompiler->compile(
-            $files,
-            $compilerOptions
+            $files
         );
 
-        $this->envFileWriter->write($compiled, $writerOptions);
+        $this->envFileWriter->write($compiled);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFinder(): EnvFileFinderInterface
+    {
+        return $this->envFileFinder;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getCompiler(): EnvCompilerInterface
+    {
+        return $this->envCompiler;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getWriter(): EnvFileWriterInterface
+    {
+        return $this->envFileWriter;
     }
 }

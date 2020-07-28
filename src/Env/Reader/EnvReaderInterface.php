@@ -5,7 +5,6 @@ namespace LDL\Env\Reader;
 interface EnvReaderInterface
 {
     /**
-     * Returns a collection of UnicodeStrings
      * @param Options\EnvReaderOptions $options
      * @return Line\EnvLineCollection
      */

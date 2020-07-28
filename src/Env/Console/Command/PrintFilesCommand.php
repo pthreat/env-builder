@@ -2,9 +2,8 @@
 
 namespace LDL\Env\Console\Command;
 
-use LDL\Env\Finder\EnvFileFinderInterface;
-use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use LDL\Env\Finder\EnvFileFinder;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use LDL\Env\Finder\Exception\NoFilesFoundException;
 use LDL\Env\Finder\Options\EnvFileFinderOptions;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,22 +14,6 @@ use Symfony\Component\Finder\SplFileInfo as FileInfo;
 class PrintFilesCommand extends SymfonyCommand
 {
     public const COMMAND_NAME = 'env:print';
-
-    /**
-     * @var EnvFileFinderInterface
-     */
-    private $finder;
-
-    public function __construct(?string $name = null, EnvFileFinderInterface $finder=null)
-    {
-        parent::__construct($name);
-
-        if(null === $finder){
-            $finder = new EnvFileFinder();
-        }
-
-        $this->finder = $finder;
-    }
 
     public function configure() : void
     {
@@ -84,13 +67,14 @@ class PrintFilesCommand extends SymfonyCommand
         $output->writeln("<info>[ Env files list ]</info>\n");
 
         try{
+            $finderOptions = EnvFileFinderOptions::fromArray([
+                'directories' => explode(',', $input->getOption('scan-directories')),
+                'files' => explode(',', $input->getOption('scan-files'))
+            ]);
 
-            $files = $this->finder->find(
-                EnvFileFinderOptions::fromArray([
-                    'directories' => explode(',', $input->getOption('scan-directories')),
-                    'files' => explode(',', $input->getOption('scan-files'))
-                ])
-            );
+            $finder = new EnvFileFinder($finderOptions);
+
+            $files = $finder->find();
 
         }catch(NoFilesFoundException $e){
             $output->writeln("\n<error>{$e->getMessage()}</error>\n");

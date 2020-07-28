@@ -2,9 +2,7 @@
 
 namespace LDL\Env\Compiler;
 
-use LDL\Console\Helper\ProgressBarFactory;
 use LDL\Env\Compiler\Line\Factory\EnvLineCompilerCompilerFactory;
-use LDL\Env\Compiler\Options\EnvCompilerOptions;
 use LDL\Env\Reader\Line\EnvLine;
 use LDL\Env\Reader\EnvReader;
 use LDL\Env\Reader\EnvReaderInterface;
@@ -15,20 +13,25 @@ use LDL\FS\Type\Types\Generic\Collection\GenericFileCollection;
 class EnvCompiler implements EnvCompilerInterface
 {
     /**
-     * @var EnvCompilerOptions
+     * @var Options\EnvCompilerOptions
      */
     private $options;
 
     private $contents = [];
 
+    public function __construct(Options\EnvCompilerOptions $options = null)
+    {
+        $this->options = $options ?? Options\EnvCompilerOptions::fromArray([]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function compile(
         GenericFileCollection $files,
-        EnvCompilerOptions $options = null,
         EnvReaderInterface $reader = null
     ) : string
     {
-        $this->options = $options ?? Options\EnvCompilerOptions::fromArray([]);
-
         /**
          * @var AbstractFileType $file
          */
@@ -53,7 +56,7 @@ class EnvCompiler implements EnvCompilerInterface
             foreach($lines as $line){
                 $compiler = EnvLineCompilerCompilerFactory::build($line);
                 $compiled = $compiler->compile($this->options, $file, $this->contents);
-                $this->contents[$filePath][] = $compiler->compile($this->options, $file, $this->contents);
+                $this->contents[$filePath][] = $compiled;
 
                 if($this->options->getOnCompile()){
                     $this->options->getOnCompile()($compiled, $this->contents);
@@ -66,9 +69,9 @@ class EnvCompiler implements EnvCompilerInterface
 
             $return = [];
 
-            foreach($this->contents as $file => $vars){
+            foreach($this->contents as $filePath => $vars){
                 if($this->options->commentsEnabled()){
-                    $return[] = "#Taken from $file";
+                    $return[] = "#Taken from $filePath";
                 }
 
                 $return[] = implode("\n",$vars);
@@ -76,6 +79,13 @@ class EnvCompiler implements EnvCompilerInterface
         }
 
         return implode("\n",$return);
+    }
 
+    /**
+     * {@inheritdoc}
+     */
+    public function getOptions(): Options\EnvCompilerOptions
+    {
+        return $this->options;
     }
 }

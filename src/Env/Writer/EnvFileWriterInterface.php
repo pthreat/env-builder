@@ -6,7 +6,11 @@ interface EnvFileWriterInterface
 {
     /**
      * @param string $content
-     * @throws Exception\FileAlreadyExistsException
      */
     public function write(string $content): void;
+
+    /**
+     * @return Options\EnvWriterOptions
+     */
+    public function getOptions(): Options\EnvWriterOptions;
 }

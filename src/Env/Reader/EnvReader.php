@@ -6,6 +6,9 @@ use Symfony\Component\String\UnicodeString;
 
 class EnvReader implements EnvReaderInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public function read(Options\EnvReaderOptions $options) : Line\EnvLineCollection
     {
         $file = $options->getFile();

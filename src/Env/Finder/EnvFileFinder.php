@@ -8,11 +8,21 @@ use LDL\FS\Type\Types\Generic\Collection\GenericFileCollection;
 class EnvFileFinder implements EnvFileFinderInterface
 {
     /**
+     * @var Options\EnvFileFinderOptions
+     */
+    private $options;
+
+    public function __construct(Options\EnvFileFinderOptions $options = null)
+    {
+        $this->options = $options ?? Options\EnvFileFinderOptions::fromArray([]);
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function find(Options\EnvFileFinderOptions $options=null) : GenericFileCollection
+    public function find() : GenericFileCollection
     {
-        $options =  $options ?? Options\EnvFileFinderOptions::fromArray([]);
+        $options = $this->options;
 
         $files = LocalFileFinder::find($options->getDirectories(), $options->getFiles(), true);
 
@@ -27,6 +37,14 @@ class EnvFileFinder implements EnvFileFinderInterface
         }
 
         return $files;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getOptions(): Options\EnvFileFinderOptions
+    {
+        return $this->options;
     }
 
 }

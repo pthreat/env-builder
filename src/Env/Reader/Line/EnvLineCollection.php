@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Reader\Line;
 
 use LDL\Type\Collection\Types\Object\ObjectCollection;
 use LDL\Type\Exception\TypeMismatchException;
-use Symfony\Component\String\UnicodeString;
 
 class EnvLineCollection extends ObjectCollection
 {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Console\Command;
 
 use LDL\Env\Finder\EnvFileFinder;

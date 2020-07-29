@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Reader\Line;
 
 use Symfony\Component\String\UnicodeString;

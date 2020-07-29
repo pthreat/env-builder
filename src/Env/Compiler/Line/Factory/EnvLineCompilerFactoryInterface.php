@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Compiler\Line\Factory;
 
 use LDL\Env\Reader\Line\EnvLine;

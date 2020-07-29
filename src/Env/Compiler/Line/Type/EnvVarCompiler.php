@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Compiler\Line\Type;
 
 use LDL\Env\Compiler\Exception\DuplicateKeyException;
@@ -38,7 +40,7 @@ class EnvVarCompiler implements EnvVarCompilerInterface
             return new UnicodeString();
         }
 
-        return new UnicodeString($string->slice(0, $equalsPosition));
+        return new UnicodeString($string->slice(0, $equalsPosition)->toString());
     }
 
 
@@ -51,7 +53,7 @@ class EnvVarCompiler implements EnvVarCompilerInterface
             return new UnicodeString();
         }
 
-        return new UnicodeString($string->slice($equalsPosition)->trimStart('='));
+        return new UnicodeString($string->slice($equalsPosition)->trimStart('=')->toString());
     }
 
     public function compile(

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Compiler;
 
 use LDL\Env\Reader\EnvReaderInterface;

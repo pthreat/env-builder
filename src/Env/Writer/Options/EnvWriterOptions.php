@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Writer\Options;
 
-class EnvWriterOptions
+use LDL\Env\Interfaces\OptionsInterface;
+
+class EnvWriterOptions implements OptionsInterface
 {
     /**
      * @var string
@@ -40,6 +44,22 @@ class EnvWriterOptions
 
         return $instance->setFilename($merge['filename'])
             ->setForce($merge['force']);
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return get_object_vars($this);
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize() : array
+    {
+        return $this->toArray();
     }
 
     /**

@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Finder\Options;
 
-class EnvFileFinderOptions
+use LDL\Env\Interfaces\OptionsInterface;
+
+class EnvFileFinderOptions implements OptionsInterface
 {
     /**
      * @var array
@@ -42,6 +46,22 @@ class EnvFileFinderOptions
 
         return $instance->setDirectories($merge['directories'])
             ->setFiles($merge['files']);
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return get_object_vars($this);
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize() : array
+    {
+        return $this->toArray();
     }
 
     /**

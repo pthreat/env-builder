@@ -1,16 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Builder;
 
 use LDL\Env\Compiler\EnvCompiler;
 use LDL\Env\Compiler\EnvCompilerInterface;
-use LDL\Env\Compiler\Options\EnvCompilerOptions;
 use LDL\Env\Finder\EnvFileFinder;
 use LDL\Env\Finder\EnvFileFinderInterface;
-use LDL\Env\Finder\Options\EnvFileFinderOptions;
 use LDL\Env\Writer\EnvFileWriter;
 use LDL\Env\Writer\EnvFileWriterInterface;
-use LDL\Env\Writer\Options\EnvWriterOptions;
 
 class EnvBuilder implements EnvBuilderInterface
 {

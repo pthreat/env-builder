@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Reader\Options;
 
 use LDL\FS\Type\AbstractFileType;

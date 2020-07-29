@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Compiler\Options;
 
-class EnvCompilerOptions
+use LDL\Env\Interfaces\OptionsInterface;
+
+class EnvCompilerOptions implements OptionsInterface
 {
     /**
      * @var bool
@@ -82,6 +86,22 @@ class EnvCompilerOptions
             ->setOnBeforeCompile($merge['onBeforeCompile'])
             ->setOnCompile($merge['onCompile'])
             ->setOnAfterCompile($merge['onAfterCompile']);
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return get_object_vars($this);
+    }
+
+    /**
+     * @return array
+     */
+    public function jsonSerialize() : array
+    {
+        return $this->toArray();
     }
 
     /**

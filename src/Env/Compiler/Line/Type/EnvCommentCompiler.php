@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace LDL\Env\Compiler\Line\Type;
 
 use LDL\Env\Compiler\Line\Interfaces\EnvCommentCompilerInterface;

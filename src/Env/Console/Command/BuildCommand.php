@@ -51,6 +51,12 @@ class BuildCommand extends SymfonyCommand
                 implode(',', $finderDefaults->getDirectories())
             )
             ->addOption(
+                'excluded-directories',
+                'e',
+                InputOption::VALUE_OPTIONAL,
+                'Comma separated list of excluded directories to scan'
+            )
+            ->addOption(
                 'scan-files',
                 'l',
                 InputOption::VALUE_OPTIONAL,
@@ -113,6 +119,7 @@ class BuildCommand extends SymfonyCommand
     ) : void
     {
         $start = hrtime(true);
+        $excludedDirectories = $input->getOption('excluded-directories');
 
         try{
 
@@ -123,7 +130,8 @@ class BuildCommand extends SymfonyCommand
 
             $finderOptions = EnvFileFinderOptions::fromArray([
                 'directories' => explode(',', $input->getOption('scan-directories')),
-                'files' => explode(',', $input->getOption('scan-files'))
+                'files' => explode(',', $input->getOption('scan-files')),
+                'excludedDirectories' => null !== $excludedDirectories ? explode(',', $excludedDirectories) : [],
             ]);
 
             $compilerProgress = new ProgressBar($output);

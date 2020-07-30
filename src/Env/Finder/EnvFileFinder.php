@@ -6,6 +6,8 @@ namespace LDL\Env\Finder;
 
 use LDL\FS\Finder\Adapter\LocalFileFinder;
 use LDL\FS\Type\Types\Generic\Collection\GenericFileCollection;
+use LDL\FS\Type\Types\Generic\GenericFileType;
+use Symfony\Component\String\UnicodeString;
 
 class EnvFileFinder implements EnvFileFinderInterface
 {
@@ -36,6 +38,24 @@ class EnvFileFinder implements EnvFileFinderInterface
             );
 
             throw new Exception\NoFilesFoundException($msg);
+        }
+
+        /**
+         * @var GenericFileType $file
+         */
+        foreach($files as $key => $file){
+            if(in_array($file->getRealPath(), $this->options->getExcludedFiles(), true)){
+                unset($files[$key]);
+            }
+
+            foreach($this->options->getExcludedDirectories() as $directory){
+                $path = new UnicodeString($file->getPath());
+                $dir = new UnicodeString($directory);
+
+                if(true === $path->startsWith($dir)){
+                    unset($files[$key]);
+                }
+            }
         }
 
         return $files;

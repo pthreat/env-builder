@@ -101,7 +101,7 @@ class EnvVarCompiler implements EnvVarCompilerInterface
 
         if(false === $options->allowVariableOverwrite()){
             $this->checkDuplicateKey(
-                $key,
+                $key->toString(),
                 $this->line->getLineNumber(),
                 $contents,
                 $file

@@ -20,6 +20,16 @@ class EnvFileFinderOptions implements OptionsInterface
         '.env'
     ];
 
+    /**
+     * @var array
+     */
+    private $excludedDirectories = [];
+
+    /**
+     * @var array
+     */
+    private $excludedFiles = [];
+
     private function __construct()
     {
     }
@@ -45,7 +55,9 @@ class EnvFileFinderOptions implements OptionsInterface
         $merge = array_merge($defaults, $options);
 
         return $instance->setDirectories($merge['directories'])
-            ->setFiles($merge['files']);
+            ->setFiles($merge['files'])
+            ->setExcludedDirectories($merge['excludedDirectories'])
+            ->setExcludedFiles($merge['excludedFiles']);
     }
 
     /**
@@ -106,6 +118,42 @@ class EnvFileFinderOptions implements OptionsInterface
         }
 
         $this->directories = $directories;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExcludedDirectories(): array
+    {
+        return $this->excludedDirectories;
+    }
+
+    /**
+     * @param array $excludedDirectories
+     * @return EnvFileFinderOptions
+     */
+    private function setExcludedDirectories(array $excludedDirectories): EnvFileFinderOptions
+    {
+        $this->excludedDirectories = $excludedDirectories;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExcludedFiles(): array
+    {
+        return $this->excludedFiles;
+    }
+
+    /**
+     * @param array $excludedFiles
+     * @return EnvFileFinderOptions
+     */
+    private function setExcludedFiles(array $excludedFiles): EnvFileFinderOptions
+    {
+        $this->excludedFiles = $excludedFiles;
         return $this;
     }
 }

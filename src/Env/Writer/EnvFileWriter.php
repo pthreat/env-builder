@@ -1,11 +1,14 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace LDL\Env\Writer;
 
+use LDL\Env\Config\EnvConfig;
+
 class EnvFileWriter implements EnvFileWriterInterface
 {
+    /**
+     * @var Options\EnvWriterOptions
+     */
     private $options;
 
     public function __construct(Options\EnvWriterOptions $options = null)
@@ -16,7 +19,7 @@ class EnvFileWriter implements EnvFileWriterInterface
     /**
      * {@inheritdoc}
      */
-    public function write(string $content): void
+    public function write(EnvConfig $config, string $content): void
     {
         $options = $this->options;
 
@@ -28,6 +31,11 @@ class EnvFileWriter implements EnvFileWriterInterface
 
             throw new Exception\FileAlreadyExistsException($msg);
         }
+
+        file_put_contents(
+            $config->getGeneratedAs(),
+            json_encode($config->toArray(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
 
         file_put_contents($options->getFilename(), $content);
     }

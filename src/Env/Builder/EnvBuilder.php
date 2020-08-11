@@ -8,8 +8,6 @@ use LDL\Env\Compiler\EnvCompiler;
 use LDL\Env\Compiler\EnvCompilerInterface;
 use LDL\Env\Finder\EnvFileFinder;
 use LDL\Env\Finder\EnvFileFinderInterface;
-use LDL\Env\Writer\EnvFileWriter;
-use LDL\Env\Writer\EnvFileWriterInterface;
 
 class EnvBuilder implements EnvBuilderInterface
 {
@@ -23,34 +21,25 @@ class EnvBuilder implements EnvBuilderInterface
      */
     private $envCompiler;
 
-    /**
-     * @var EnvFileWriterInterface
-     */
-    private $envFileWriter;
-
     public function __construct(
         EnvFileFinderInterface $envFileFinder = null,
-        EnvCompilerInterface $envCompiler = null,
-        EnvFileWriterInterface $envFileWriter = null
+        EnvCompilerInterface $envCompiler = null
     )
     {
         $this->envFileFinder = $envFileFinder ?? new EnvFileFinder();
         $this->envCompiler = $envCompiler ?? new EnvCompiler();
-        $this->envFileWriter = $envFileWriter ?? new EnvFileWriter();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function build(): void
+    public function build(): string
     {
         $files = $this->envFileFinder->find();
 
-        $compiled = $this->envCompiler->compile(
+        return $this->envCompiler->compile(
             $files
         );
-
-        $this->envFileWriter->write($compiled);
     }
 
     /**
@@ -67,13 +56,5 @@ class EnvBuilder implements EnvBuilderInterface
     public function getCompiler(): EnvCompilerInterface
     {
         return $this->envCompiler;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getWriter(): EnvFileWriterInterface
-    {
-        return $this->envFileWriter;
     }
 }

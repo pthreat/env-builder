@@ -16,21 +16,60 @@ class EnvFileFinder implements EnvFileFinderInterface
      */
     private $options;
 
+    /**
+     * @var GenericFileCollection
+     */
+    private $files;
+
     public function __construct(Options\EnvFileFinderOptions $options = null)
     {
         $this->options = $options ?? Options\EnvFileFinderOptions::fromArray([]);
+        $this->files = new GenericFileCollection();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function find() : GenericFileCollection
+    public function find(bool $cache = false) : GenericFileCollection
     {
+        if(true === $cache){
+            return $this->files;
+        }
+
         $options = $this->options;
 
         $files = LocalFileFinder::find($options->getDirectories(), $options->getFiles(), true);
 
-        if(!count($files)){
+        $return = new GenericFileCollection();
+
+        /**
+         * @var GenericFileType $file
+         */
+        foreach($files as $key => $file){
+            $unset = false;
+
+            if(in_array($file->getRealPath(), $this->options->getExcludedFiles(), true)){
+                $unset = true;
+            }
+
+            foreach($this->options->getExcludedDirectories() as $directory){
+                $path = new UnicodeString($file->getPath());
+                $dir = new UnicodeString($directory);
+
+                if(true === $path->startsWith($dir)){
+                    $unset = true;
+                    break;
+                }
+            }
+
+            if(true === $unset){
+                continue;
+            }
+
+            $return->append($file);
+        }
+
+        if(!count($return)){
             $msg = sprintf(
                 'No files were found matching: "%s" in directories: "%s"',
                 implode(', ', $options->getFiles()),
@@ -40,25 +79,8 @@ class EnvFileFinder implements EnvFileFinderInterface
             throw new Exception\NoFilesFoundException($msg);
         }
 
-        /**
-         * @var GenericFileType $file
-         */
-        foreach($files as $key => $file){
-            if(in_array($file->getRealPath(), $this->options->getExcludedFiles(), true)){
-                unset($files[$key]);
-            }
-
-            foreach($this->options->getExcludedDirectories() as $directory){
-                $path = new UnicodeString($file->getPath());
-                $dir = new UnicodeString($directory);
-
-                if(true === $path->startsWith($dir)){
-                    unset($files[$key]);
-                }
-            }
-        }
-
-        return $files;
+        $this->files = $return;
+        return $return;
     }
 
     /**

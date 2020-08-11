@@ -20,7 +20,7 @@
         }
     ],
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.3",
         "symfony/console": "~5.0",
         "ldl-framework/file-finder": "^0.0.1",
         "symfony/string": "^5.1",

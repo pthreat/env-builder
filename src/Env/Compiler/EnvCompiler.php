@@ -19,6 +19,9 @@ class EnvCompiler implements EnvCompilerInterface
      */
     private $options;
 
+    /**
+     * @var array
+     */
     private $contents = [];
 
     public function __construct(Options\EnvCompilerOptions $options = null)
@@ -73,7 +76,7 @@ class EnvCompiler implements EnvCompilerInterface
 
             foreach($this->contents as $filePath => $vars){
                 if($this->options->commentsEnabled()){
-                    $return[] = "#Taken from $filePath";
+                    $return[] = "\n#Taken from $filePath\n";
                 }
 
                 $return[] = implode("\n",$vars);

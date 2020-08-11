@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace LDL\Env\Console\Command;
 
 use LDL\Env\Compiler\EnvCompiler;
+use LDL\Env\Config\EnvConfig;
+use LDL\Env\Config\EnvConfigFactory;
 use LDL\Env\Finder\EnvFileFinder;
 use LDL\Env\Writer\EnvFileWriter;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
@@ -123,11 +125,6 @@ class BuildCommand extends SymfonyCommand
 
         try{
 
-            $writerOptions = EnvWriterOptions::fromArray([
-                'filename' => $input->getArgument('output-file'),
-                'force' => (bool) $input->getOption('force-overwrite')
-            ]);
-
             $finderOptions = EnvFileFinderOptions::fromArray([
                 'directories' => explode(',', $input->getOption('scan-directories')),
                 'files' => explode(',', $input->getOption('scan-files')),
@@ -156,6 +153,11 @@ class BuildCommand extends SymfonyCommand
                 }
             ]);
 
+            $writerOptions = EnvWriterOptions::fromArray([
+                'filename' => $input->getArgument('output-file'),
+                'force' => (bool) $input->getOption('force-overwrite')
+            ]);
+
             $writer = new EnvFileWriter($writerOptions);
 
             $title = '[ Building compiled env file ]';
@@ -167,7 +169,13 @@ class BuildCommand extends SymfonyCommand
                 new EnvCompiler($compilerOptions)
             );
 
-            $writer->write($builder->build());
+            $content = $builder->build();
+
+            $writer->write(EnvConfigFactory::factory(
+                $builder->getFinder(),
+                $builder->getCompiler(),
+                $writer
+            ), $content);
 
             $output->writeln("");
 

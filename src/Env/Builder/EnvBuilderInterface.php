@@ -7,16 +7,16 @@ namespace LDL\Env\Builder;
 use LDL\Env\Compiler\EnvCompilerInterface;
 use LDL\Env\Finder\EnvFileFinderInterface;
 use LDL\Env\Finder\Exception\NoFilesFoundException;
-use LDL\Env\Writer\EnvFileWriterInterface;
 use LDL\Env\Writer\Exception\FileAlreadyExistsException;
 
 interface EnvBuilderInterface
 {
     /**
+     * @return string
      * @throws NoFilesFoundException
      * @throws FileAlreadyExistsException
      */
-    public function build(): void;
+    public function build(): string;
 
     /**
      * @return EnvFileFinderInterface
@@ -27,9 +27,4 @@ interface EnvBuilderInterface
      * @return EnvCompilerInterface
      */
     public function getCompiler(): EnvCompilerInterface;
-
-    /**
-     * @return EnvFileWriterInterface
-     */
-    public function getWriter(): EnvFileWriterInterface;
 }

@@ -156,17 +156,18 @@ class BuildCommand extends SymfonyCommand
                 }
             ]);
 
+            $writer = new EnvFileWriter($writerOptions);
+
             $title = '[ Building compiled env file ]';
 
             $output->writeln("\n<info>$title</info>");
 
             $builder = new EnvBuilder(
                 new EnvFileFinder($finderOptions),
-                new EnvCompiler($compilerOptions),
-                new EnvFileWriter($writerOptions)
+                new EnvCompiler($compilerOptions)
             );
 
-            $builder->build();
+            $writer->write($builder->build());
 
             $output->writeln("");
 

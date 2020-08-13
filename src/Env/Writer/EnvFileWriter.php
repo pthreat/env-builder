@@ -34,7 +34,7 @@ class EnvFileWriter implements EnvFileWriterInterface
 
         file_put_contents(
             $config->getGeneratedAs(),
-            json_encode($config->toArray(), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            json_encode($config->toArray(), \JSON_THROW_ON_ERROR | \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES)
         );
 
         file_put_contents($options->getFilename(), $content);

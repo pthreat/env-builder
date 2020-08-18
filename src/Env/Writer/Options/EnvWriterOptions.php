@@ -11,7 +11,7 @@ class EnvWriterOptions implements OptionsInterface
     /**
      * @var string
      */
-    private $filename = 'env-compiled';
+    private $filename = '.env-compiled';
 
     /**
      * @var bool

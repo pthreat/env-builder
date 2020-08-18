@@ -6,7 +6,7 @@ use LDL\Env\Interfaces\OptionsInterface;
 
 class EnvConfig implements OptionsInterface
 {
-    public const DEFAULT_OUTPUT_FILENAME = 'env-compiled';
+    public const DEFAULT_OUTPUT_FILENAME = '.env-compiled';
 
     public const DEFAULT_GENERATED_FILENAME = 'env-config.json';
 

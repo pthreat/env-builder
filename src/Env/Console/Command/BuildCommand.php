@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace LDL\Env\Console\Command;
 
 use LDL\Env\Compiler\EnvCompiler;
-use LDL\Env\Config\EnvConfig;
 use LDL\Env\Config\EnvConfigFactory;
 use LDL\Env\Finder\EnvFileFinder;
 use LDL\Env\Writer\EnvFileWriter;
@@ -38,7 +37,7 @@ class BuildCommand extends SymfonyCommand
             )
             ->addOption(
                 'force-overwrite',
-                'f',
+                'w',
                 InputOption::VALUE_NONE,
                 'Overwrite output file'
             )
@@ -76,6 +75,13 @@ class BuildCommand extends SymfonyCommand
                 'i',
                 InputOption::VALUE_NONE,
                 'Ignore syntax error'
+            )
+            ->addOption(
+                'prefix-variable',
+                'x',
+                InputOption::VALUE_OPTIONAL,
+                'Set directory prefix variable name (overrides prefix-variable-depth)',
+                $compilerDefaults->getPrefixDepth()
             )
             ->addOption(
                 'prefix-variable-depth',
@@ -137,6 +143,7 @@ class BuildCommand extends SymfonyCommand
             $compilerOptions = EnvCompilerOptions::fromArray([
                 'allowVariableOverwrite' => $input->getOption('variable-overwrite'),
                 'ignoreSyntaxErrors' => $input->getOption('ignore-syntax-error'),
+                'prefix' => $input->getOption('prefix-variable'),
                 'prefixDepth' => $input->getOption('prefix-variable-depth'),
                 'convertToUpperCase' => $input->getOption('convert-to-uppercase'),
                 'commentsEnabled' => $input->getOption('comments-enabled'),

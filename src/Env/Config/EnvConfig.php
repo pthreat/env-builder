@@ -67,6 +67,7 @@ class EnvConfig implements OptionsInterface
     {
         return [
             'generation' => [
+                'user' => function_exists('posix_getpwuid') ? posix_getpwuid(posix_geteuid())['name'] : 'UNKNOWN',
                 'outputFilename' => $this->getOutputFilename(),
                 'generatedAs' => $this->getGeneratedAs(),
                 'date' => $this->getDate()->format(\DateTimeInterface::W3C)

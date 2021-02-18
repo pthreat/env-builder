@@ -81,16 +81,16 @@ class EnvVarCompiler implements EnvVarCompilerInterface
 
         $value = $this->getValue();
 
-        $prefix = '';
+        $prefix = $options->getPrefix();
 
-        if($options->getPrefixDepth() > 0) {
+        if('' === $prefix && $options->getPrefixDepth() > 0) {
             $prefix = $this->getEnvKeyPrefix($file, $options->getPrefixDepth());
         }
 
         $key = new UnicodeString(
             sprintf(
-            '%s%s',
-            '' === $prefix ? '' : "{$prefix}_",
+                '%s%s',
+                '' === $prefix ? '' : "{$prefix}_",
                 $key
             )
         );
@@ -99,14 +99,12 @@ class EnvVarCompiler implements EnvVarCompilerInterface
             $key = $key->upper();
         }
 
-        if(false === $options->allowVariableOverwrite()){
-            $this->checkDuplicateKey(
-                $key->toString(),
-                $this->line->getLineNumber(),
-                $contents,
-                $file
-            );
-        }
+        $this->checkDuplicateKey(
+            $key->toString(),
+            $this->line->getLineNumber(),
+            $contents,
+            $file
+        );
 
         return new UnicodeString(sprintf('%s=%s', $key, $value));
     }
@@ -144,16 +142,18 @@ class EnvVarCompiler implements EnvVarCompilerInterface
     ) : void
     {
         foreach($contents as $f => $vars){
-            if(array_key_exists($key, $vars)){
-                $msg = sprintf(
-                    'Duplicated key "%s" found in file: "%s", at line %s, defined first in file: %s',
-                    $key,
-                    $file->getRealPath(),
-                    $line,
-                    $f
-                );
+            foreach($vars as $var){
+                if($var->startsWith($key)){
+                    $msg = sprintf(
+                        'Duplicated key "%s" found in file: "%s", at line %s, defined first in file: %s',
+                        $key,
+                        $file->getRealPath(),
+                        $line,
+                        $f
+                    );
 
-                throw new DuplicateKeyException($msg);
+                    throw new DuplicateKeyException($msg);
+                }
             }
         }
     }

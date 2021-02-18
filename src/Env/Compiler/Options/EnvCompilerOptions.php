@@ -19,6 +19,11 @@ class EnvCompilerOptions implements OptionsInterface
     private $ignoreSyntaxErrors = false;
 
     /**
+     * @var string
+     */
+    private $prefix = '';
+
+    /**
      * @var int
      */
     private $prefixDepth=0;
@@ -78,7 +83,8 @@ class EnvCompilerOptions implements OptionsInterface
         $merge = array_merge($defaults, $options);
 
         return $instance->setAllowVariableOverwrite($merge['allowVariableOverwrite'])
-            ->SetIgnoreSyntaxErrors($merge['ignoreSyntaxErrors'])
+            ->setIgnoreSyntaxErrors($merge['ignoreSyntaxErrors'])
+            ->setPrefix($merge['prefix'])
             ->setPrefixDepth($merge['prefixDepth'])
             ->setConvertToUpperCase($merge['convertToUpperCase'])
             ->setCommentsEnabled($merge['commentsEnabled'])
@@ -129,13 +135,11 @@ class EnvCompilerOptions implements OptionsInterface
     }
 
     /**
-     * @param bool $allowVariableOverwrite
-     * @return EnvCompilerOptions
+     * @return bool
      */
-    public function setAllowVariableOverwrite(bool $allowVariableOverwrite): EnvCompilerOptions
+    public function allowVariableOverwrite(): bool
     {
-        $this->allowVariableOverwrite = $allowVariableOverwrite;
-        return $this;
+        return $this->allowVariableOverwrite;
     }
 
     /**
@@ -149,18 +153,19 @@ class EnvCompilerOptions implements OptionsInterface
     /**
      * @return bool
      */
-    public function allowVariableOverwrite(): bool
-    {
-        return $this->allowVariableOverwrite;
-    }
-
-    /**
-     * @return bool
-     */
     public function ignoreSyntaxErrors(): bool
     {
         return $this->ignoreSyntaxErrors;
     }
+
+    /**
+     * @return string
+     */
+    public function getPrefix(): string
+    {
+        return $this->prefix;
+    }
+
     /**
      * @return int
      */
@@ -175,6 +180,34 @@ class EnvCompilerOptions implements OptionsInterface
     public function commentsEnabled(): bool
     {
         return $this->commentsEnabled;
+    }
+
+    /**
+     * @return bool
+     */
+    public function removeComments(): bool
+    {
+        return $this->removeComments;
+    }
+
+    /**
+     * @param bool $allowVariableOverwrite
+     * @return EnvCompilerOptions
+     */
+    private function setAllowVariableOverwrite(bool $allowVariableOverwrite): EnvCompilerOptions
+    {
+        $this->allowVariableOverwrite = $allowVariableOverwrite;
+        return $this;
+    }
+
+    /**
+     * @param string $prefix
+     * @return EnvCompilerOptions
+     */
+    private function setPrefix(string $prefix): EnvCompilerOptions
+    {
+        $this->prefix = $prefix;
+        return $this;
     }
 
     /**
@@ -206,14 +239,6 @@ class EnvCompilerOptions implements OptionsInterface
         $this->commentsEnabled = $enabled;
 
         return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function removeComments(): bool
-    {
-        return $this->removeComments;
     }
 
     /**
